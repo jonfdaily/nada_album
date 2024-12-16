@@ -81,13 +81,12 @@ for WAV_FILE in "$DIRECTORY"/*.wav; do
   echo -e "\033[1;33mEnter the track number for $BASE_NAME (e.g., 01, 02, etc.):\033[0m"
   read TRACK_NUMBER
   
-  # Generate the output MP3 file path with formatted title
+	# Generate the output MP3 file path with formatted title
 	BASE_NAME_SAFE=$(escape_filename "$SONG_TITLE")
-	
 	MP3_FILENAME="${TRACK_NUMBER}_${ARTIST_SAFE}_${ALBUM_SAFE}_${BASE_NAME_SAFE}.mp3"
 	MP3_FILE="$MP3_DIR/$MP3_FILENAME"
-
-  # Use lame to attach the album art to the MP3 file
+	
+	# Use lame to attach the album art to the MP3 file
 	lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$WAV_FILE" "$MP3_FILE" &
 	spin $!
   
