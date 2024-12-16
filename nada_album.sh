@@ -47,7 +47,7 @@ escape_filename() {
   echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/[\/\\&]/_/g'
 }
 
-# Prompt the user for artist, album, and year information with bold and colored text
+# Prompt the user for artist, album, and year information
 echo -e "\033[1;32mEnter the name of the artist:\033[0m"
 read ARTIST
 echo -e "\033[1;32mEnter the name of the album:\033[0m"
@@ -73,11 +73,11 @@ for WAV_FILE in "$DIRECTORY"/*.wav; do
   # Get the base name of the WAV file (without extension)
   BASE_NAME=$(basename "$WAV_FILE" .wav)
 
-  # Prompt the user for song title with bold text, show only the filename
+  # Prompt the user for song title
   echo -e "\033[1;33mEnter the song title for $BASE_NAME:\033[0m"
   read SONG_TITLE
 
-  # Prompt the user for track number with bold text, show only the filename
+  # Prompt the user for track number
   echo -e "\033[1;33mEnter the track number for $BASE_NAME (e.g., 01, 02, etc.):\033[0m"
   read TRACK_NUMBER
 
