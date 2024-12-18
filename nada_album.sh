@@ -26,12 +26,12 @@ fi
 IMAGE_FILE=$(find "$DIRECTORY" -type f -iname "*.jpg" -print -quit)
 if [ -z "$IMAGE_FILE" ]; then
   echo -e "\033[1;31mNo image file found for cover art in the directory.\033[0m"
-	echo -e "\033[1;32mWould you like to (c)ontinue w/o an image or (q)uit? (c/q)\033[0m"
-	read CONTINUE
-	if [ "$CONTINUE" != "c" ]; then
-		echo -e "\033[1;32mAdd an image and run again\033[0m"
-		exit 1
-	fi
+  echo -e "\033[1;32mWould you like to (c)ontinue w/o an image or (q)uit? (c/q)\033[0m"
+  read CONTINUE
+  if [ "$CONTINUE" != "c" ]; then
+    echo -e "\033[1;32mAdd an image and run again\033[0m"
+    exit 1
+  fi
 fi
 
 # Function to show a spinner while processing
@@ -106,8 +106,8 @@ done
 
 # Include cover.jpg in the 'mp3' folder if exists
 if [ ! -z "$IMAGE_FILE" ]; then
-	cp "$IMAGE_FILE" "$MP3_DIR/cover.jpg"
-	echo -e "\033[1;32mAll files converted, tagged, and artwork added successfully!\033[0m"
+  cp "$IMAGE_FILE" "$MP3_DIR/cover.jpg"
+  echo -e "\033[1;32mAll files converted, tagged, and artwork added successfully!\033[0m"
 else
-	echo -e "\033[1;32mAll files converted and tagged\033[0m"
+  echo -e "\033[1;32mAll files converted and tagged\033[0m"
 fi
