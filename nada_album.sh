@@ -25,8 +25,13 @@ fi
 # Check if there's an image file in the directory
 IMAGE_FILE=$(find "$DIRECTORY" -type f -iname "*.jpg" -print -quit)
 if [ -z "$IMAGE_FILE" ]; then
-  echo -e "\033[1;31mNo image file found in the directory. Please include a jpg image for album art.\033[0m"
-  exit 1
+  echo -e "\033[1;31mNo image file found for cover art in the directory.\033[0m"
+	echo -e "\033[1;32mWould you like to (c)ontinue w/o an image or (q)uit? (c/q)\033[0m"
+	read CONTINUE
+	if [ "$CONTINUE" != "c" ]; then
+		echo -e "\033[1;32mAdd an image and run again\033[0m"
+		exit 1
+	fi
 fi
 
 # Function to show a spinner while processing
@@ -62,37 +67,47 @@ MP3_DIR="$DIRECTORY/$ARTIST_SAFE-$ALBUM_SAFE"
 # Create 'mp3' directory if it doesn't exist
 mkdir -p "$MP3_DIR"
 
-# Loop through all .wav files in the provided directory
-for WAV_FILE in "$DIRECTORY"/*.wav; do
-  # Skip if no .wav files found
-  if [ ! -f "$WAV_FILE" ]; then
-    echo -e "\033[1;31mNo .wav files found in the directory.\033[0m"
-    exit 1
+# Loop through all .wav/mp3 files in the provided directory
+for AUDIO_FILE in "$DIRECTORY"/*.{wav,mp3}; do
+  # Skip if no audio files are found
+  if [ ! -f "$AUDIO_FILE" ]; then
+    continue
   fi
   
-  # Get the base name of the WAV file (without extension)
-  BASE_NAME=$(basename "$WAV_FILE" .wav)
+  # Get the base name of the audio file (without extension)
+  BASE_NAME=$(basename "$AUDIO_FILE")
+  BASE_NAME_NO_EXT="${BASE_NAME%.*}"
 
   # Prompt the user for song title
-  echo -e "\033[1;33mEnter the song title for $BASE_NAME:\033[0m"
+  echo -e "\033[1;33mEnter the song title for $BASE_NAME_NO_EXT:\033[0m"
   read SONG_TITLE
 
   # Prompt the user for track number
-  echo -e "\033[1;33mEnter the track number for $BASE_NAME (e.g., 01, 02, etc.):\033[0m"
+  echo -e "\033[1;33mEnter the track number for $BASE_NAME_NO_EXT (e.g., 01, 02, etc.):\033[0m"
   read TRACK_NUMBER
 
   # Generate the output MP3 file path with formatted title
   BASE_NAME_SAFE=$(escape_filename "$SONG_TITLE")
   MP3_FILENAME="${TRACK_NUMBER}_${ARTIST_SAFE}_${ALBUM_SAFE}_${BASE_NAME_SAFE}.mp3"
   MP3_FILE="$MP3_DIR/$MP3_FILENAME"
-	
-  # Use lame to attach the album art to the MP3 file
-  lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$WAV_FILE" "$MP3_FILE" &
-  spin $!
   
-  echo -e "\033[1;32mConverted $BASE_NAME to $MP3_FILENAME with metadata and artwork.\033[0m"
+  # If the file is .wav, convert it to MP3 using lame
+  if [[ "$AUDIO_FILE" == *.wav ]]; then
+    lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$AUDIO_FILE" "$MP3_FILE" &
+    spin $!
+    echo -e "\033[1;32mConverted $BASE_NAME_NO_EXT to $MP3_FILENAME with metadata and artwork.\033[0m"
+  else
+    # If it's already an MP3, just tag it with the metadata
+    lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$AUDIO_FILE" "$MP3_FILE" &
+    spin $!
+    echo -e "\033[1;32mTagged existing MP3 file $BASE_NAME_NO_EXT with metadata and artwork.\033[0m"
+  fi
 done
-# Include cover.jpg in the 'mp3' folder
-cp "$IMAGE_FILE" "$MP3_DIR/cover.jpg"
 
-echo -e "\033[1;32mAll files converted, tagged, and artwork added successfully!\033[0m"
+# Include cover.jpg in the 'mp3' folder if exists
+if [ ! -z "$IMAGE_FILE" ]; then
+	cp "$IMAGE_FILE" "$MP3_DIR/cover.jpg"
+	echo -e "\033[1;32mAll files converted, tagged, and artwork added successfully!\033[0m"
+else
+	echo -e "\033[1;32mAll files converted and tagged\033[0m"
+fi
