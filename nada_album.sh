@@ -53,7 +53,7 @@ escape_filename() {
 }
 
 # Prompt the user for artist, album, and year information
-echo -e "\033[1;32mEnter the name of the artist:\033[0m"
+echo -e "\033[1;32mEnter the name of the artist (leave blank for different artists per track):\033[0m"
 read ARTIST
 echo -e "\033[1;32mEnter the name of the album:\033[0m"
 read ALBUM
@@ -82,6 +82,14 @@ for AUDIO_FILE in "$DIRECTORY"/*.{wav,mp3}; do
   echo -e "\033[1;33mEnter the song title for $BASE_NAME_NO_EXT:\033[0m"
   read SONG_TITLE
 
+  if [ ! "$ARTIST" ]; then
+    echo -e "\033[1;33mEnter the name of the artist for $SONG_TITLE:\033[0m"
+    read ARTIST_TMP
+    ARTIST_SAFE=$(escape_filename "$ARTIST_TMP")
+  else
+    ARTIST_TMP = ARTIST
+  fi
+
   # Prompt the user for track number
   echo -e "\033[1;33mEnter the track number for $BASE_NAME_NO_EXT (e.g., 01, 02, etc.):\033[0m"
   read TRACK_NUMBER
@@ -93,12 +101,12 @@ for AUDIO_FILE in "$DIRECTORY"/*.{wav,mp3}; do
   
   # If the file is .wav, convert it to MP3 using lame
   if [[ "$AUDIO_FILE" == *.wav ]]; then
-    lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$AUDIO_FILE" "$MP3_FILE" &
+    lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST_TMP" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$AUDIO_FILE" "$MP3_FILE" &
     spin $!
     echo -e "\033[1;32mConverted $BASE_NAME_NO_EXT to $MP3_FILENAME with metadata and artwork.\033[0m"
   else
     # If it's already an MP3, just tag it with the metadata
-    lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$AUDIO_FILE" "$MP3_FILE" &
+    lame --quiet --tc "$ENCODE_COMMENT" --ti "$IMAGE_FILE" --tt "$SONG_TITLE" --ta "$ARTIST_TMP" --tl "$ALBUM" --ty "$YEAR" --tn "$TRACK_NUMBER" "$AUDIO_FILE" "$MP3_FILE" &
     spin $!
     echo -e "\033[1;32mTagged existing MP3 file $BASE_NAME_NO_EXT with metadata and artwork.\033[0m"
   fi
