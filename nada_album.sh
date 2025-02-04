@@ -87,7 +87,7 @@ for AUDIO_FILE in "$DIRECTORY"/*.{wav,mp3}; do
     read ARTIST_TMP
     ARTIST_SAFE=$(escape_filename "$ARTIST_TMP")
   else
-    ARTIST_TMP = ARTIST
+    ARTIST_TMP=$ARTIST
   fi
 
   # Prompt the user for track number
